@@ -2,7 +2,6 @@ from ikomia import core, dataprocess
 from ikomia.dnn.torch import models
 import os
 import copy
-# Your imports below
 import torch
 import torchvision.transforms as transforms
 import random
@@ -12,10 +11,10 @@ import random
 # - Class to handle the process parameters
 # - Inherits core.CProtocolTaskParam from Ikomia API
 # --------------------
-class MaskRCNNParam(core.CProtocolTaskParam):
+class MaskRCNNParam(core.CWorkflowTaskParam):
 
     def __init__(self):
-        core.CProtocolTaskParam.__init__(self)
+        core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
         self.model_name = 'MaskRcnn'
         self.dataset = 'Coco2017'
@@ -52,10 +51,10 @@ class MaskRCNNParam(core.CProtocolTaskParam):
 # - Class which implements the process
 # - Inherits core.CProtocolTask or derived from Ikomia API
 # --------------------
-class MaskRCNNProcess(dataprocess.CImageProcess2d):
+class MaskRCNNProcess(dataprocess.C2dImageTask):
 
     def __init__(self, name, param):
-        dataprocess.CImageProcess2d.__init__(self, name)
+        dataprocess.C2dImageTask.__init__(self, name)
         self.model = None
         self.class_names = []
         # Detect if we have a GPU available
@@ -65,11 +64,11 @@ class MaskRCNNProcess(dataprocess.CImageProcess2d):
         # Segmentation mask output
         self.setOutputDataType(core.IODataType.IMAGE_LABEL, 0)
         # Result image
-        self.addOutput(dataprocess.CImageProcessIO(core.IODataType.IMAGE))
+        self.addOutput(dataprocess.CImageIO(core.IODataType.IMAGE))
         # Add graphics output
         self.addOutput(dataprocess.CGraphicsOutput())
         # Add numeric output
-        self.addOutput(dataprocess.CDblFeatureIO())
+        self.addOutput(dataprocess.CNumericIO())
 
         # Create parameters class
         if param is None:
@@ -209,10 +208,10 @@ class MaskRCNNProcess(dataprocess.CImageProcess2d):
 # - Factory class to build process object
 # - Inherits dataprocess.CProcessFactory from Ikomia API
 # --------------------
-class MaskRCNNProcessFactory(dataprocess.CProcessFactory):
+class MaskRCNNProcessFactory(dataprocess.CTaskFactory):
 
     def __init__(self):
-        dataprocess.CProcessFactory.__init__(self)
+        dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
         self.info.name = "MaskRCNN"
         self.info.shortDescription = "Mask R-CNN inference model for object detection and segmentation."

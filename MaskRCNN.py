@@ -1,6 +1,4 @@
 from ikomia import dataprocess
-import MaskRCNN_process as processMod
-import MaskRCNN_widget as widgetMod
 
 
 # --------------------
@@ -13,9 +11,11 @@ class MaskRCNN(dataprocess.CPluginProcessInterface):
         dataprocess.CPluginProcessInterface.__init__(self)
 
     def getProcessFactory(self):
+        from MaskRCNN.MaskRCNN_process import MaskRCNNProcessFactory
         # Instantiate process object
-        return processMod.MaskRCNNProcessFactory()
+        return MaskRCNNProcessFactory()
 
     def getWidgetFactory(self):
+        from MaskRCNN.MaskRCNN_widget import MaskRCNNWidgetFactory
         # Instantiate associated widget object
-        return widgetMod.MaskRCNNWidgetFactory()
+        return MaskRCNNWidgetFactory()
