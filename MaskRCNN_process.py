@@ -173,7 +173,8 @@ class MaskRCNNProcess(dataprocess.C2dImageTask):
             box = boxes[i]
             w = box[2] - box[0]
             h = box[3] - box[1]
-            graphics_output.addRectangle(float(box[0]), float(box[1]), float(w), float(h), prop_rect)
+            graphics_box = graphics_output.addRectangle(float(box[0]), float(box[1]), float(w), float(h), prop_rect)
+            graphics_box.setCategory(self.class_names[labels[i]])
             # label
             label = self.class_names[labels[i]] + ": {:.3f}".format(scores[i])
             graphics_output.addText(label, float(box[0]), float(box[1]), prop_text)
