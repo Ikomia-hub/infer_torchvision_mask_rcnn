@@ -1,7 +1,7 @@
 import os
 from ikomia import utils, core, dataprocess
 from ikomia.utils import pyqtutils, qtconversion
-from MaskRCNN.MaskRCNN_process import MaskRCNNParam
+from infer_torchvision_mask_rcnn.infer_torchvision_mask_rcnn_process import MaskRcnnParam
 # PyQt GUI framework
 from PyQt5.QtWidgets import *
 
@@ -10,13 +10,13 @@ from PyQt5.QtWidgets import *
 # - Class which implements widget associated with the process
 # - Inherits core.CProtocolTaskWidget from Ikomia API
 # --------------------
-class MaskRCNNWidget(core.CWorkflowTaskWidget):
+class MaskRcnnWidget(core.CWorkflowTaskWidget):
 
     def __init__(self, param, parent):
         core.CWorkflowTaskWidget.__init__(self, parent)
 
         if param is None:
-            self.parameters = MaskRCNNParam()
+            self.parameters = MaskRcnnParam()
         else:
             self.parameters = param
 
@@ -86,13 +86,13 @@ class MaskRCNNWidget(core.CWorkflowTaskWidget):
 # - Factory class to build process widget object
 # - Inherits dataprocess.CWidgetFactory from Ikomia API
 # --------------------
-class MaskRCNNWidgetFactory(dataprocess.CWidgetFactory):
+class MaskRcnnWidgetFactory(dataprocess.CWidgetFactory):
 
     def __init__(self):
         dataprocess.CWidgetFactory.__init__(self)
         # Set the name of the process -> it must be the same as the one declared in the process factory class
-        self.name = "MaskRCNN"
+        self.name = "infer_torchvision_mask_rcnn"
 
     def create(self, param):
         # Create widget object
-        return MaskRCNNWidget(param, None)
+        return MaskRcnnWidget(param, None)

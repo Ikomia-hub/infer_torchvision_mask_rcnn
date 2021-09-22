@@ -11,7 +11,7 @@ import random
 # - Class to handle the process parameters
 # - Inherits core.CProtocolTaskParam from Ikomia API
 # --------------------
-class MaskRCNNParam(core.CWorkflowTaskParam):
+class MaskRcnnParam(core.CWorkflowTaskParam):
 
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
@@ -51,7 +51,7 @@ class MaskRCNNParam(core.CWorkflowTaskParam):
 # - Class which implements the process
 # - Inherits core.CProtocolTask or derived from Ikomia API
 # --------------------
-class MaskRCNNProcess(dataprocess.C2dImageTask):
+class MaskRcnn(dataprocess.C2dImageTask):
 
     def __init__(self, name, param):
         dataprocess.C2dImageTask.__init__(self, name)
@@ -72,7 +72,7 @@ class MaskRCNNProcess(dataprocess.C2dImageTask):
 
         # Create parameters class
         if param is None:
-            self.setParam(MaskRCNNParam())
+            self.setParam(MaskRcnnParam())
         else:
             self.setParam(copy.deepcopy(param))
 
@@ -209,12 +209,12 @@ class MaskRCNNProcess(dataprocess.C2dImageTask):
 # - Factory class to build process object
 # - Inherits dataprocess.CProcessFactory from Ikomia API
 # --------------------
-class MaskRCNNProcessFactory(dataprocess.CTaskFactory):
+class MaskRcnnFactory(dataprocess.CTaskFactory):
 
     def __init__(self):
         dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
-        self.info.name = "MaskRCNN"
+        self.info.name = "infer_torchvision_mask_rcnn"
         self.info.shortDescription = "Mask R-CNN inference model for object detection and segmentation."
         self.info.description = "Mask R-CNN inference model for object detection and segmentation. " \
                                 "Implementation from PyTorch torchvision package. " \
@@ -236,4 +236,4 @@ class MaskRCNNProcessFactory(dataprocess.CTaskFactory):
 
     def create(self, param=None):
         # Create process object
-        return MaskRCNNProcess(self.info.name, param)
+        return MaskRcnn(self.info.name, param)
