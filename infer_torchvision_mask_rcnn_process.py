@@ -57,6 +57,7 @@ class MaskRcnn(dataprocess.C2dImageTask):
         dataprocess.C2dImageTask.__init__(self, name)
         self.model = None
         self.class_names = []
+        self.colors = []
         # Detect if we have a GPU available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # Remove graphics input
@@ -68,7 +69,7 @@ class MaskRcnn(dataprocess.C2dImageTask):
         # Add graphics output
         self.addOutput(dataprocess.CGraphicsOutput())
         # Add numeric output
-        self.addOutput(dataprocess.CNumericIO())
+        self.addOutput(dataprocess.CBlobMeasureIO())
 
         # Create parameters class
         if param is None:
@@ -103,21 +104,23 @@ class MaskRcnn(dataprocess.C2dImageTask):
 
         return output
 
+    def generate_colors(self):
+        # we use seed to keep the same color for our boxes + labels (same random each time)
+        random.seed(30)
+        for cl in self.class_names:
+            self.colors.append([random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255])
+
     def run(self):
         # Core function of your process
         # Call beginTaskRun for initialization
         self.beginTaskRun()
-        random.seed(1)
 
         # Get parameters :
         param = self.getParam()
 
         # Get input :
-        input = self.getInput(0)
-        src_image = input.getImage()
-
-        h = src_image.shape[0]
-        w = src_image.shape[1]
+        img_input = self.getInput(0)
+        src_image = img_input.getImage()
 
         # Step progress bar:
         self.emitStepProgress()
@@ -133,6 +136,7 @@ class MaskRcnn(dataprocess.C2dImageTask):
                 self.model.load_state_dict(torch.load(param.model_path))
 
             self.model.to(self.device)
+            self.generate_colors()
             param.update = False
 
         pred = self.predict(src_image)
@@ -152,12 +156,11 @@ class MaskRcnn(dataprocess.C2dImageTask):
         graphics_output = self.getOutput(2)
         graphics_output.setNewLayer("MaskRCNN")
         graphics_output.setImageIndex(1)
-        prop_text = core.GraphicsTextProperty()
-        prop_rect = core.GraphicsRectProperty()
+        # Init numeric output
+        numeric_output = self.getOutput(3)
+        numeric_output.clearData()
 
         # Get predictions
-        detected_names = []
-        detected_scores = []
         size = masks.size()
         valid_results = [scores.index(x) for x in scores if x > param.confidence]
         object_value = len(valid_results)
@@ -165,38 +168,47 @@ class MaskRcnn(dataprocess.C2dImageTask):
         colors = [[0, 0, 0]]
 
         for i in valid_results:
-            # color
-            color = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
-            prop_text.color = color
-            prop_rect.pen_color = color
             # box
-            box = boxes[i]
-            w = box[2] - box[0]
-            h = box[3] - box[1]
-            graphics_box = graphics_output.addRectangle(float(box[0]), float(box[1]), float(w), float(h), prop_rect)
+            box_x = float(boxes[i][0])
+            box_y = float(boxes[i][1])
+            box_w = float(boxes[i][2] - boxes[i][0])
+            box_h = float(boxes[i][3] - boxes[i][1])
+            prop_rect = core.GraphicsRectProperty()
+            prop_rect.pen_color = self.colors[labels[i]]
+            prop_rect.category = self.class_names[labels[i]]
+            graphics_box = graphics_output.addRectangle(box_x, box_y, box_w, box_h, prop_rect)
             graphics_box.setCategory(self.class_names[labels[i]])
             # label
+            prop_text = core.GraphicsTextProperty()
+            prop_text.font_size = 8
+            prop_text.color = self.colors[labels[i]]
+            prop_text.bold = True
             label = self.class_names[labels[i]] + ": {:.3f}".format(scores[i])
-            graphics_output.addText(label, float(box[0]), float(box[1]), prop_text)
-            detected_names.append(self.class_names[labels[i]])
-            detected_scores.append(scores[i])
+            graphics_output.addText(label, box_x, box_y, prop_text)
             # masks -> merge into a single labelled image
             mask = (masks[i] > param.mask_threshold).float()
             mask_or = torch.max(mask_or, mask * object_value)
             object_value -= 1
-            colors.insert(1, color)
+            # object results
+            results = []
+            confidence_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.CUSTOM, "Confidence"),
+                                                         float(scores[i]),
+                                                         graphics_box.getId(),
+                                                         self.class_names[labels[i]])
+            box_data = dataprocess.CObjectMeasure(dataprocess.CMeasure(core.MeasureId.BBOX),
+                                                  [box_x, box_y, box_w, box_h],
+                                                  graphics_box.getId(),
+                                                  self.class_names[labels[i]])
+            results.append(confidence_data)
+            results.append(box_data)
+            numeric_output.addObjectMeasures(results)
+            colors.insert(1, self.colors[labels[i]])
 
         # Segmentation mask output
         mask_output = self.getOutput(0)
         mask_numpy = mask_or.squeeze().byte().cpu().numpy()
         mask_output.setImage(mask_numpy)
         self.setOutputColorMap(1, 0, colors)
-
-        # Init numeric output
-        numeric_ouput = self.getOutput(3)
-        numeric_ouput.clearData()
-        numeric_ouput.setOutputType(dataprocess.NumericOutputType.TABLE)
-        numeric_ouput.addValueList(detected_scores, "Probability", detected_names)
 
         # Step progress bar:
         self.emitStepProgress()
@@ -231,7 +243,7 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
         self.info.iconPath = "icons/pytorch-logo.png"
-        self.info.version = "1.0.1"
+        self.info.version = "1.1.0"
         self.info.keywords = "torchvision,detection,segmentation,instance,object,resnet,pytorch"
 
     def create(self, param=None):
