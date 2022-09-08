@@ -162,7 +162,7 @@ class MaskRcnn(dataprocess.C2dImageTask):
             box_w = float(boxes[i][2] - boxes[i][0])
             box_h = float(boxes[i][3] - boxes[i][1])
             mask = (masks[i] > param.mask_threshold).byte()
-            instance_output.addInstance(labels[i], self.class_names[labels[i]], float(scores[i]),
+            instance_output.addInstance(0, labels[i], self.class_names[labels[i]], float(scores[i]),
                                         box_x, box_y, box_w, box_h,
                                         mask.squeeze().cpu().numpy(), self.colors[labels[i] + 1])
 
