@@ -24,7 +24,7 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         self.mask_threshold = 0.5
         self.update = False
 
-    def setParamMap(self, param_map):
+    def set_values(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
         self.model_name = param_map["model_name"]
@@ -34,10 +34,10 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         self.confidence = float(param_map["confidence"])
         self.mask_threshold = float(param_map["mask_threshold"])
 
-    def getParamMap(self):
+    def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
-        param_map = core.ParamMap()
+        param_map = {}
         param_map["model_name"] = self.model_name
         param_map["dataset"] = self.dataset
         param_map["model_path"] = self.model_path
@@ -51,35 +51,31 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
 # - Class which implements the process
 # - Inherits core.CProtocolTask or derived from Ikomia API
 # --------------------
-class MaskRcnn(dataprocess.C2dImageTask):
+class MaskRcnn(dataprocess.CInstanceSegmentationTask):
 
     def __init__(self, name, param):
-        dataprocess.C2dImageTask.__init__(self, name)
+        dataprocess.CInstanceSegmentationTask.__init__(self, name)
         self.model = None
         self.class_names = []
         self.colors = []
         # Detect if we have a GPU available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Remove graphics input
-        self.removeInput(1)
-        # Add instance segmentation output
-        self.addOutput(dataprocess.CInstanceSegIO())
 
         # Create parameters class
         if param is None:
-            self.setParam(MaskRcnnParam())
+            self.set_param_object(MaskRcnnParam())
         else:
-            self.setParam(copy.deepcopy(param))
+            self.set_param_object(copy.deepcopy(param))
 
     def load_class_names(self):
         self.class_names.clear()
-        param = self.getParam()
+        param = self.get_param_object()
 
         with open(param.classes_path) as f:
             for row in f:
                 self.class_names.append(row[:-1])
 
-    def getProgressSteps(self):
+    def get_progress_steps(self):
         # Function returning the number of progress steps for this process
         # This is handled by the main progress bar of Ikomia application
         return 3
@@ -108,19 +104,19 @@ class MaskRcnn(dataprocess.C2dImageTask):
 
     def run(self):
         # Core function of your process
-        # Call beginTaskRun for initialization
-        self.beginTaskRun()
+        # Call begin_task_run for initialization
+        self.begin_task_run()
 
         # Get parameters :
-        param = self.getParam()
+        param = self.get_param_object()
 
         # Get input :
-        img_input = self.getInput(0)
-        src_image = img_input.getImage()
+        img_input = self.get_input(0)
+        src_image = img_input.get_image()
         h, w, _ = src_image.shape
 
         # Step progress bar:
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Load model
         if self.model is None or param.update:
@@ -134,6 +130,7 @@ class MaskRcnn(dataprocess.C2dImageTask):
 
             self.model.to(self.device)
             self.generate_colors()
+            self.set_names(self.class_names)
             param.update = False
 
         pred = self.predict(src_image)
@@ -144,14 +141,10 @@ class MaskRcnn(dataprocess.C2dImageTask):
         masks = pred[0]["masks"]
 
         # Step progress bar:
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Forward input image to result image
-        self.forwardInputImage(0, 0)
-
-        # Init graphics output
-        instance_output = self.getOutput(1)
-        instance_output.init("MaskRCNN", 0, w, h)
+        self.forward_input_image(0, 0)
 
         # Get predictions
         valid_results = [scores.index(x) for x in scores if x > param.confidence]
@@ -162,17 +155,15 @@ class MaskRcnn(dataprocess.C2dImageTask):
             box_w = float(boxes[i][2] - boxes[i][0])
             box_h = float(boxes[i][3] - boxes[i][1])
             mask = (masks[i] > param.mask_threshold).byte()
-            instance_output.addInstance(i, 0, labels[i], self.class_names[labels[i]], float(scores[i]),
+            self.add_instance(i, 0, labels[i], float(scores[i]),
                                         box_x, box_y, box_w, box_h,
-                                        mask.squeeze().cpu().numpy(), self.colors[labels[i] + 1])
-
-        self.setOutputColorMap(0, 1, self.colors)
+                                        mask.squeeze().cpu().numpy())
 
         # Step progress bar:
-        self.emitStepProgress()
+        self.emit_step_progress()
 
-        # Call endTaskRun to finalize process
-        self.endTaskRun()
+        # Call end_task_run to finalize process
+        self.end_task_run()
 
 
 # --------------------
@@ -185,7 +176,7 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
         self.info.name = "infer_torchvision_mask_rcnn"
-        self.info.shortDescription = "Mask R-CNN inference model for object detection and segmentation."
+        self.info.short_description = "Mask R-CNN inference model for object detection and segmentation."
         self.info.description = "Mask R-CNN inference model for object detection and segmentation. " \
                                 "Implementation from PyTorch torchvision package. " \
                                 "This Ikomia plugin can make inference of pre-trained model from " \
@@ -196,11 +187,11 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         self.info.journal = "Proceedings of the IEEE International Conference on Computer Vision (ICCV)"
         self.info.year = 2017
         self.info.licence = "BSD-3-Clause License"
-        self.info.documentationLink = "https://arxiv.org/abs/1703.06870"
+        self.info.documentation_link = "https://arxiv.org/abs/1703.06870"
         self.info.repository = "https://github.com/pytorch/vision"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
-        self.info.iconPath = "icons/pytorch-logo.png"
+        self.info.icon_path = "icons/pytorch-logo.png"
         self.info.version = "1.2.0"
         self.info.keywords = "torchvision,detection,segmentation,instance,object,resnet,pytorch"
 
