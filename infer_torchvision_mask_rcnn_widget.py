@@ -35,9 +35,9 @@ class MaskRcnnWidget(core.CWorkflowTaskWidget):
                                                            self.parameters.classes_path)
 
         self.spin_confidence = pyqtutils.append_double_spin(self.grid_layout, "Confidence",
-                                                            self.parameters.confidence, 0.0, 1.0, 0.1, 2)
+                                                            self.parameters.conf_thres, 0.0, 1.0, 0.1, 2)
         self.spin_mask_thresh = pyqtutils.append_double_spin(self.grid_layout, "Mask threshold",
-                                                             self.parameters.mask_threshold, 0.0, 1.0, 0.1, 2)
+                                                             self.parameters.iou_thres, 0.0, 1.0, 0.1, 2)
 
         if self.parameters.dataset == "Coco2017":
             self.browse_model.set_path("Not used")
@@ -75,8 +75,8 @@ class MaskRcnnWidget(core.CWorkflowTaskWidget):
         self.parameters.dataset = self.combo_dataset.currentText()
         self.parameters.model_path = self.browse_model.path
         self.parameters.classes_path = self.browse_classes.path
-        self.parameters.confidence = self.spin_confidence.value()
-        self.parameters.mask_threshold = self.spin_mask_thresh.value()
+        self.parameters.conf_thres = self.spin_confidence.value()
+        self.parameters.iou_thres = self.spin_mask_thresh.value()
 
         # Send signal to launch the process
         self.emit_apply(self.parameters)

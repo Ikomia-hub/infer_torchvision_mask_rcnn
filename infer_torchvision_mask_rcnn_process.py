@@ -16,34 +16,37 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
+        self.model_name_or_path = ""
         self.model_name = 'MaskRcnn'
         self.dataset = 'Coco2017'
         self.model_path = ''
         self.classes_path = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
-        self.confidence = 0.5
-        self.mask_threshold = 0.5
+        self.conf_thres = 0.5
+        self.iou_thres = 0.5
         self.update = False
 
     def set_values(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
+        self.model_name_or_path = param_map["model_name_or_path"]
         self.model_name = param_map["model_name"]
         self.dataset = param_map["dataset"]
         self.model_path = param_map["model_path"]
         self.classes_path = param_map["classes_path"]
-        self.confidence = float(param_map["confidence"])
-        self.mask_threshold = float(param_map["mask_threshold"])
+        self.conf_thres = float(param_map["conf_thres"])
+        self.iou_thres = float(param_map["iou_thres"])
 
     def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         param_map = {}
+        param_map["model_name_or_path"] = self.model_name_or_path
         param_map["model_name"] = self.model_name
         param_map["dataset"] = self.dataset
         param_map["model_path"] = self.model_path
         param_map["classes_path"] = self.classes_path
-        param_map["confidence"] = str(self.confidence)
-        param_map["mask_threshold"] = str(self.mask_threshold)
+        param_map["conf_thres"] = str(self.conf_thres)
+        param_map["iou_thres"] = str(self.iou_thres)
         return param_map
 
 
@@ -122,6 +125,14 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         if self.model is None or param.update:
             # Load class names
             self.load_class_names()
+
+            if param.model_name_or_path != "":
+                if os.path.isfile(param.model_name_or_path):
+                    param.dataset = "Custom"
+                    param.model_path = param.model_name_or_path
+                else:
+                    param.model_name = param.model_name_or_path
+
             # Load model
             use_torchvision = param.dataset != "Custom"
             self.model = models.mask_rcnn(use_pretrained=use_torchvision, classes=len(self.class_names))
@@ -147,14 +158,14 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         self.forward_input_image(0, 0)
 
         # Get predictions
-        valid_results = [scores.index(x) for x in scores if x > param.confidence]
+        valid_results = [scores.index(x) for x in scores if x > param.conf_thres]
         for i in valid_results:
             # box
             box_x = float(boxes[i][0])
             box_y = float(boxes[i][1])
             box_w = float(boxes[i][2] - boxes[i][0])
             box_h = float(boxes[i][3] - boxes[i][1])
-            mask = (masks[i] > param.mask_threshold).byte()
+            mask = (masks[i] > param.iou_thres).byte()
             self.add_instance(i, 0, labels[i], float(scores[i]),
                                         box_x, box_y, box_w, box_h,
                                         mask.squeeze().cpu().numpy())
