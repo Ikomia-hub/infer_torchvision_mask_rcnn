@@ -166,7 +166,7 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
             box_w = float(boxes[i][2] - boxes[i][0])
             box_h = float(boxes[i][3] - boxes[i][1])
             mask = (masks[i] > param.iou_thres).byte()
-            self.add_instance(i, 0, labels[i], float(scores[i]),
+            self.add_object(i, 0, labels[i], float(scores[i]),
                                         box_x, box_y, box_w, box_h,
                                         mask.squeeze().cpu().numpy())
 
