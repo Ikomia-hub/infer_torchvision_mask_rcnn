@@ -20,7 +20,7 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         self.model_name = 'MaskRcnn'
         self.dataset = 'Coco2017'
         self.model_path = ''
-        self.classes_path = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
+        self.class_file = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
         self.conf_thres = 0.5
         self.iou_thres = 0.5
         self.update = False
@@ -32,7 +32,7 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         self.model_name = param_map["model_name"]
         self.dataset = param_map["dataset"]
         self.model_path = param_map["model_path"]
-        self.classes_path = param_map["classes_path"]
+        self.class_file = param_map["class_file"]
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
 
@@ -44,7 +44,7 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         param_map["model_name"] = self.model_name
         param_map["dataset"] = self.dataset
         param_map["model_path"] = self.model_path
-        param_map["classes_path"] = self.classes_path
+        param_map["class_file"] = self.class_file
         param_map["conf_thres"] = str(self.conf_thres)
         param_map["iou_thres"] = str(self.iou_thres)
         return param_map
@@ -74,7 +74,7 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         self.class_names.clear()
         param = self.get_param_object()
 
-        with open(param.classes_path) as f:
+        with open(param.class_file) as f:
             for row in f:
                 self.class_names.append(row[:-1])
 
