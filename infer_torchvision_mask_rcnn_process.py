@@ -16,10 +16,9 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
-        self.model_name_or_path = ""
         self.model_name = 'MaskRcnn'
         self.dataset = 'Coco2017'
-        self.model_path = ''
+        self.model_weight_file = ''
         self.class_file = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
         self.conf_thres = 0.5
         self.iou_thres = 0.5
@@ -28,10 +27,9 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
     def set_values(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
-        self.model_name_or_path = param_map["model_name_or_path"]
         self.model_name = param_map["model_name"]
         self.dataset = param_map["dataset"]
-        self.model_path = param_map["model_path"]
+        self.model_weight_file = param_map["model_weight_file"]
         self.class_file = param_map["class_file"]
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
@@ -40,10 +38,9 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         param_map = {}
-        param_map["model_name_or_path"] = self.model_name_or_path
         param_map["model_name"] = self.model_name
         param_map["dataset"] = self.dataset
-        param_map["model_path"] = self.model_path
+        param_map["model_weight_file"] = self.model_weight_file
         param_map["class_file"] = self.class_file
         param_map["conf_thres"] = str(self.conf_thres)
         param_map["iou_thres"] = str(self.iou_thres)
@@ -126,18 +123,14 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
             # Load class names
             self.load_class_names()
 
-            if param.model_name_or_path != "":
-                if os.path.isfile(param.model_name_or_path):
+            if param.model_weight_file != "":
                     param.dataset = "Custom"
-                    param.model_path = param.model_name_or_path
-                else:
-                    param.model_name = param.model_name_or_path
 
             # Load model
             use_torchvision = param.dataset != "Custom"
             self.model = models.mask_rcnn(use_pretrained=use_torchvision, classes=len(self.class_names))
             if param.dataset == "Custom":
-                self.model.load_state_dict(torch.load(param.model_path, map_location=self.device))
+                self.model.load_state_dict(torch.load(param.model_weight_file, map_location=self.device))
 
             self.model.to(self.device)
             self.generate_colors()
