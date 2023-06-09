@@ -190,7 +190,7 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         self.info.article = "Mask R-CNN"
         self.info.journal = "Proceedings of the IEEE International Conference on Computer Vision (ICCV)"
         self.info.year = 2017
-        self.info.licence = "BSD-3-Clause License"
+        self.info.license = "BSD-3-Clause License"
         self.info.documentation_link = "https://arxiv.org/abs/1703.06870"
         self.info.repository = "https://github.com/pytorch/vision"
         # relative path -> as displayed in Ikomia application process tree
