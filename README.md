@@ -50,7 +50,7 @@ algo = wf.add_task(name="infer_torchvision_mask_rcnn", auto_connect=True)
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/feat/new_readme/icons/example.jpg")
 
 # Display result
-display(algo.get_image_with_mask())
+display(algo.get_image_with_mask_and_graphics())
 ```
 
 ## :sunny: Use with Ikomia Studio
