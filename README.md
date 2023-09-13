@@ -19,10 +19,9 @@
     </a> 
 </p>
 
-Mask R-CNN inference model for object detection and segmentation. Implementation from PyTorch torchvision package. This Ikomia plugin can make inference of pre-trained model from COCO dataset or custom trained model. Custom training can be made with the associated MaskRCNNTrain plugin from Ikomia marketplace.
+Run Mask R-CNN inference model for object detection and segmentation.
 
-[Insert illustrative image here. Image must be accessible publicly, in algorithm Github repository for example.
-<img src="images/illustration.png"  alt="Illustrative image" width="30%" height="30%">]
+![Results](https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/feat/new_readme/icons/results.jpg)
 
 ## :rocket: Use with Ikomia API
 
@@ -36,11 +35,10 @@ pip install ikomia
 
 #### 2. Create your workflow
 
-[Change the sample image URL to fit algorithm purpose]
 
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
+from ikomia.utils.displayIO import display
 
 # Init your workflow
 wf = Workflow()
@@ -48,8 +46,11 @@ wf = Workflow()
 # Add algorithm
 algo = wf.add_task(name="infer_torchvision_mask_rcnn", auto_connect=True)
 
-# Run on your image  
-wf.run_on(url="example_image.png")
+# Run on your image
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/feat/new_readme/icons/example.jpg")
+
+# Display result
+display(algo.get_image_with_mask())
 ```
 
 ## :sunny: Use with Ikomia Studio
@@ -62,12 +63,14 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 
 ## :pencil: Set algorithm parameters
 
-[Explain each algorithm parameters]
+- **model_weight_file** (str, default=''): Path to model weights file .pth. If not provided, will use pretrain from torchvision
+- **class_file** (str): Path to class file. Default to coco 2017 classes.
+- **conf_thres** (float, default=0.5): Box threshold for the prediction [0,1]
+- **iou_thres** (float, default=0.5): Intersection over Union, degree of overlap between two boxes. [0,1]
 
-[Change the sample image URL to fit algorithm purpose]
+*Note*: parameter key and value should be in **string format** when added to the dictionary.
 
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
 
 # Init your workflow
@@ -77,13 +80,9 @@ wf = Workflow()
 algo = wf.add_task(name="infer_torchvision_mask_rcnn", auto_connect=True)
 
 algo.set_parameters({
-    "param1": "value1",
-    "param2": "value2",
-    ...
+    "conf_thres": "0.8",
+    "iou_thres": "0.8"
 })
-
-# Run on your image  
-wf.run_on(url="example_image.png")
 
 ```
 
@@ -105,13 +104,9 @@ algo = wf.add_task(name="infer_torchvision_mask_rcnn", auto_connect=True)
 wf.run_on(url="example_image.png")
 
 # Iterate over outputs
-for output in algo.get_outputs()
+for output in algo.get_outputs():
     # Print information
     print(output)
     # Export it to JSON
     output.to_json()
 ```
-
-## :fast_forward: Advanced usage 
-
-[optional]
