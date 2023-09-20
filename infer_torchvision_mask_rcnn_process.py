@@ -67,6 +67,8 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         else:
             self.set_param_object(copy.deepcopy(param))
 
+        self.model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "weights")
+
     def load_class_names(self):
         self.class_names.clear()
         param = self.get_param_object()
@@ -128,6 +130,7 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
 
             # Load model
             use_torchvision = param.dataset != "Custom"
+            torch.hub.set_dir(self.model_folder)
             self.model = models.mask_rcnn(use_pretrained=use_torchvision, classes=len(self.class_names))
             if param.dataset == "Custom":
                 self.model.load_state_dict(torch.load(param.model_weight_file, map_location=self.device))
