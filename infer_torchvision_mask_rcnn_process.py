@@ -19,7 +19,7 @@ class MaskRcnnParam(core.CWorkflowTaskParam):
         self.model_name = 'MaskRcnn'
         self.dataset = 'Coco2017'
         self.model_weight_file = ''
-        self.class_file = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
+        self.class_file = ""
         self.conf_thres = 0.5
         self.iou_thres = 0.5
         self.update = False
@@ -72,8 +72,11 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
     def load_class_names(self):
         self.class_names.clear()
         param = self.get_param_object()
-
-        with open(param.class_file) as f:
+        if param.class_file == "":
+            class_file = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
+        else:
+            class_file = param.class_file
+        with open(class_file) as f:
             for row in f:
                 self.class_names.append(row[:-1])
 
