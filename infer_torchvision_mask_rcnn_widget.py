@@ -40,7 +40,7 @@ class MaskRcnnWidget(core.CWorkflowTaskWidget):
                                                              self.parameters.iou_thres, 0.0, 1.0, 0.1, 2)
 
         if self.parameters.dataset == "Coco2017":
-            self.browse_model.set_path("Not used")
+            self.browse_model.set_path("")
             self.browse_model.setEnabled(False)
             self.browse_classes.setEnabled(False)
 
@@ -58,7 +58,7 @@ class MaskRcnnWidget(core.CWorkflowTaskWidget):
 
     def on_combo_dataset_changed(self, index):
         if self.combo_dataset.itemText(index) == "Coco2017":
-            self.browse_model.set_path("Not used")
+            self.browse_model.set_path("")
             self.browse_model.setEnabled(False)
             self.browse_classes.set_path(os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt")
             self.browse_classes.setEnabled(False)

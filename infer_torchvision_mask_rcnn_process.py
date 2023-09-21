@@ -130,11 +130,16 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
 
             # Load model
             use_torchvision = param.dataset != "Custom"
+
+            old_hub_dir = torch.hub.get_dir()
+
             torch.hub.set_dir(self.model_folder)
             self.model = models.mask_rcnn(use_pretrained=use_torchvision, classes=len(self.class_names))
+
             if param.dataset == "Custom":
                 self.model.load_state_dict(torch.load(param.model_weight_file, map_location=self.device))
 
+            torch.hub.set_dir(old_hub_dir)
             self.model.to(self.device)
             self.generate_colors()
             self.set_names(self.class_names)
