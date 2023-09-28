@@ -192,18 +192,14 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         # Set process information as string here
         self.info.name = "infer_torchvision_mask_rcnn"
         self.info.short_description = "Mask R-CNN inference model for object detection and segmentation."
-        self.info.description = "Mask R-CNN inference model for object detection and segmentation. " \
-                                "Implementation from PyTorch torchvision package. " \
-                                "This Ikomia plugin can make inference of pre-trained model from " \
-                                "COCO dataset or custom trained model. Custom training can be made with " \
-                                "the associated MaskRCNNTrain plugin from Ikomia marketplace."
         self.info.authors = "Kaiming He, Georgia Gkioxari, Piotr Dollar, Ross Girshick"
         self.info.article = "Mask R-CNN"
         self.info.journal = "Proceedings of the IEEE International Conference on Computer Vision (ICCV)"
         self.info.year = 2017
         self.info.license = "BSD-3-Clause License"
         self.info.documentation_link = "https://arxiv.org/abs/1703.06870"
-        self.info.repository = "https://github.com/pytorch/vision"
+        self.info.repository = "https://github.com/Ikomia-hub/infer_torchvision_mask_rcnn"
+        self.info.original_repository = "https://github.com/pytorch/vision"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
         self.info.icon_path = "icons/pytorch-logo.png"
