@@ -205,6 +205,8 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         self.info.icon_path = "icons/pytorch-logo.png"
         self.info.version = "1.3.0"
         self.info.keywords = "torchvision,detection,segmentation,instance,object,resnet,pytorch"
+        self.info.algo_type = core.AlgoType.INFER
+        self.info.algo_tasks = "INSTANCE_SEGMENTATION"
 
     def create(self, param=None):
         # Create process object
