@@ -21,7 +21,7 @@
 
 Run Mask R-CNN inference model for object detection and segmentation.
 
-![Results](https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/feat/new_readme/icons/results.jpg)
+![Results](https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/main/icons/results.jpg)
 
 ## :rocket: Use with Ikomia API
 
@@ -47,7 +47,7 @@ wf = Workflow()
 algo = wf.add_task(name="infer_torchvision_mask_rcnn", auto_connect=True)
 
 # Run on your image
-wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/feat/new_readme/icons/example.jpg")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_torchvision_mask_rcnn/main/icons/example.jpg")
 
 # Display result
 display(algo.get_image_with_mask_and_graphics())
