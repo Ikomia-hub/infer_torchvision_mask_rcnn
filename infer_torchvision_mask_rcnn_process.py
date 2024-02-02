@@ -203,7 +203,7 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
         self.info.icon_path = "icons/pytorch-logo.png"
-        self.info.version = "1.3.0"
+        self.info.version = "1.3.1"
         self.info.keywords = "torchvision,detection,segmentation,instance,object,resnet,pytorch"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "INSTANCE_SEGMENTATION"
