@@ -59,7 +59,8 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         self.class_names = []
         self.colors = []
         # Detect if we have a GPU available
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Create parameters class
         if param is None:
@@ -67,13 +68,15 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         else:
             self.set_param_object(copy.deepcopy(param))
 
-        self.model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "weights")
+        self.model_folder = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "weights")
 
     def load_class_names(self):
         self.class_names.clear()
         param = self.get_param_object()
         if param.class_file == "":
-            class_file = os.path.dirname(os.path.realpath(__file__)) + "/models/coco2017_classes.txt"
+            class_file = os.path.dirname(os.path.realpath(
+                __file__)) + "/models/coco2017_classes.txt"
         else:
             class_file = param.class_file
         with open(class_file) as f:
@@ -88,7 +91,7 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
     def predict(self, image):
         trs = transforms.Compose([
             transforms.ToTensor(),
-            ])
+        ])
 
         input_tensor = trs(image)
         input_tensor = input_tensor.unsqueeze(0)
@@ -105,7 +108,8 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         random.seed(10)
 
         for cl in self.class_names:
-            self.colors.append([random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255])
+            self.colors.append([random.randint(0, 255), random.randint(
+                0, 255), random.randint(0, 255), 255])
 
     def run(self):
         # Core function of your process
@@ -129,7 +133,7 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
             self.load_class_names()
 
             if param.model_weight_file != "":
-                    param.dataset = "Custom"
+                param.dataset = "Custom"
 
             # Load model
             use_torchvision = param.dataset != "Custom"
@@ -137,10 +141,12 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
             old_hub_dir = torch.hub.get_dir()
 
             torch.hub.set_dir(self.model_folder)
-            self.model = models.mask_rcnn(use_pretrained=use_torchvision, classes=len(self.class_names))
+            self.model = models.mask_rcnn(
+                use_pretrained=use_torchvision, classes=len(self.class_names))
 
             if param.dataset == "Custom":
-                self.model.load_state_dict(torch.load(param.model_weight_file, map_location=self.device))
+                self.model.load_state_dict(torch.load(
+                    param.model_weight_file, map_location=self.device))
 
             torch.hub.set_dir(old_hub_dir)
             self.model.to(self.device)
@@ -162,7 +168,8 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
         self.forward_input_image(0, 0)
 
         # Get predictions
-        valid_results = [scores.index(x) for x in scores if x > param.conf_thres]
+        valid_results = [scores.index(x)
+                         for x in scores if x > param.conf_thres]
         for i in valid_results:
             # box
             box_x = float(boxes[i][0])
@@ -171,8 +178,8 @@ class MaskRcnn(dataprocess.CInstanceSegmentationTask):
             box_h = float(boxes[i][3] - boxes[i][1])
             mask = (masks[i] > param.iou_thres).byte()
             self.add_object(i, 0, labels[i], float(scores[i]),
-                                        box_x, box_y, box_w, box_h,
-                                        mask.squeeze().cpu().numpy())
+                            box_x, box_y, box_w, box_h,
+                            mask.squeeze().cpu().numpy())
 
         # Step progress bar:
         self.emit_step_progress()
@@ -203,7 +210,9 @@ class MaskRcnnFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
         self.info.icon_path = "icons/pytorch-logo.png"
-        self.info.version = "1.3.1"
+        self.info.version = "2.0.0"
+        self.info.min_ikomia_version = "0.15.0"
+        self.info.min_python_version = "3.11.0"
         self.info.keywords = "torchvision,detection,segmentation,instance,object,resnet,pytorch"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "INSTANCE_SEGMENTATION"
